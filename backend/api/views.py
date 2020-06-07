@@ -18,7 +18,7 @@ def search(request):
     filters = {}
     if 'limit' in params:
         limit = int(params['limit'])
-        limit = max(30, limit)
+        limit = min(30, limit)
     if params.get('name'):
         filters['name__contains'] = params['name']
     for key in ['type', 'source', 'casts', 'directors']:
@@ -48,7 +48,7 @@ def search_fusion(request):
     filters = {}
     if params.get("limit"):
         limit = int(params['limit'])
-        limit = max(30, limit)
+        limit = min(30, limit)
     if params.get("name"):
         filters['name__contains'] = params['name']
     for key in ['type', 'casts', 'directors']:
