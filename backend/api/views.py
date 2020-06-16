@@ -1,14 +1,9 @@
 import json
 
-from django.shortcuts import render
-from .models import Profile, Fusion
-from django.views.generic import View
+from .models import Profile, Fusion, Details
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
-from django.core import serializers
 from mongoengine.queryset.visitor import Q
-
-# Create your views here.
 
 
 @api_view(['GET'])
@@ -21,24 +16,36 @@ def search(request):
         limit = min(30, limit)
     if params.get('name'):
         filters['name__contains'] = params['name']
-    for key in ['type', 'source', 'casts', 'directors']:
+    for key in ['types', 'source', 'stars', 'directors', 'writers', 'country', 'language']:
         if params.get(key):
             filters[key] = params[key]
     if params.get("time_min"):
-        filters['time__gt'] = str(max(int(params['time_min']), 0))
+        filters['year'] = {"$gt": str(max(int(params['time_min']), 0))}
     if params.get("time_max"):
-        filters['time__lt'] = str(int(params['time_max']) + 1)
+        filters['year'] = {"$lt": str(int(params['time_max']) + 1)}
     if 'rate_min' in params:
-        filters['rate__gte'] = params['rate_min']
+        filters['rating__gte'] = params['rate_min']
     if 'rate_max' in params and params['rate_max'] != "10":
-        filters['rate__lte'] = params['rate_max']
+        filters['rating__lte'] = params['rate_max']
+    if 'insertStamp' in params:
+        filters['insertStamp'] = params['insertStamp']
     offset = int(request.GET.get('offset', 0))
-    movies = Profile.objects.exclude('_id').filter(**filters)
+    movies = Details.objects.exclude('_id').filter(**filters)
     total = movies.count()
     if 'order' in params:
         movies = movies.order_by(params['order'])
     movies = movies.limit(limit).skip(offset)
-    return JsonResponse({'data': json.loads(movies.to_json()), 'total': total}, json_dumps_params={'ensure_ascii': False})
+    return JsonResponse({'data': json.loads(movies.to_json()), 'total': total},
+                        json_dumps_params={'ensure_ascii': False})
+
+
+@api_view(['GET'])
+def movie(request):
+    params = request.GET.dict()
+    filters = {}
+    filters['sourceId'] = params['sourceId']
+    movie = Details.objects.exclude('_id').filter(**filters)
+    return JsonResponse({'data': json.loads(movie.to_json())}, json_dumps_params={'ensure_ascii': False})
 
 
 @api_view(['GET'])
@@ -78,4 +85,5 @@ def search_fusion(request):
             order = params["order"]
         movies = movies.order_by(order)
     movies = movies.limit(limit).skip(offset)
-    return JsonResponse({'data': json.loads(movies.to_json()), 'total': total}, json_dumps_params={'ensure_ascii': False})
+    return JsonResponse({'data': json.loads(movies.to_json()), 'total': total},
+                        json_dumps_params={'ensure_ascii': False})

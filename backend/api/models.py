@@ -6,7 +6,31 @@ with open('api/setting.json') as f:
     setting = json.load(f)
 connect('movie', host=setting['host'], username=setting['username'], password=setting['password'])
 
+
 # Create your models here.
+
+class Details(Document):
+    source = StringField()
+    sourceId = StringField()
+    name = StringField()
+    nameFrn = StringField()
+    cover = StringField()
+    directors = ListField(StringField())
+    writers = ListField(StringField())
+    stars = ListField(StringField())
+    types = ListField(StringField())
+    country = ListField(StringField())
+    language = ListField(StringField())
+    releaseDate = ListField(StringField())
+    runtime = StringField()
+    imdb = StringField()
+    summary = StringField()
+    rating = StringField()
+    rateNum = StringField()
+    insertStamp = StringField()
+    year = StringField()
+    _id = ObjectIdField()
+
 
 class Profile(Document):
     name = StringField()
@@ -33,5 +57,3 @@ class Fusion(Document):
     rate_num = StringField()
     source = DictField()
     _id = ObjectIdField()
-
-

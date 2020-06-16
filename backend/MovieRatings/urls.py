@@ -24,4 +24,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     url('api/search', view=views.search),
     url('api/fusion', view=views.search_fusion),
+    url('api/movie', view=views.movie)
 ]
