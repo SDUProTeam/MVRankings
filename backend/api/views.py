@@ -1,9 +1,56 @@
 import json
 
-from .models import Profile, Fusion, Details
-from django.http import JsonResponse
+from .models import Comments, Fusion, Details, User
+from django.http import JsonResponse, HttpResponse
 from rest_framework.decorators import api_view
 from mongoengine.queryset.visitor import Q
+from bson import ObjectId
+from recsys.models import Recommander
+import time
+
+
+class UserView:
+    def set_cookie(self, resp, id):
+        resp.set_cookie('_id', id)
+        return resp
+
+    @api_view(['POST'])
+    def signin(self, request):
+        form = request.POST.dict()
+        user = User.objects.filter(Q(name=form['name']) | Q(phone=form['name']))
+        if len(user)==0:
+            return JsonResponse({'success': False, 'msg': '不存在该用户'},
+                                json_dumps_params={'ensure_ascii': False})
+        if user[0]['pwd'] != form['pwd']:
+            return JsonResponse({'success': False, 'msg': '密码错误'},
+                                json_dumps_params={'ensure_ascii': False})
+        return self.set_cookie(HttpResponse('success'), user[0]['_id']['$oid'])
+
+    @api_view(['POST'])
+    def signup(self, request):
+        form = request.POST.dict()
+        if len(User.objects.filter(name=form['name']))>0:
+            return JsonResponse({'success': False, 'msg': '用户名已被注册'},
+                                json_dumps_params={'ensure_ascii': False})
+        if 'phone' in form and len(User.objects.filter(phone=form['phone']))>0:
+            return JsonResponse({'success': False, 'msg': '手机号已被注册'},
+                                json_dumps_params={'ensure_ascii': False})
+        user = User(name=form['name'], pwd=form['pwd'])
+        if 'phone' in form:
+            user.phone = form['phone']
+        user.save()
+        user = User.objects.filter(name=form['name'], pwd=form['pwd'])[0]
+        return self.set_cookie(JsonResponse({'success': True}), user['_id']['$oid'])
+
+    @api_view(['GET'])
+    def history(self, request):
+        cookies = request.COOKIES
+        user=User.objects.with_id(ObjectId(cookies['_id']))
+        if len(user)==0:
+            return JsonResponse({'success': False, 'msg': '登陆状态异常，请重新登录'},
+                                json_dumps_params={'ensure_ascii': False})
+        return JsonResponse({'success': True, 'history': json.loads(user[0]['history'].to_json())},
+                            json_dumps_params={'ensure_ascii': False})
 
 
 @api_view(['GET'])
@@ -40,12 +87,36 @@ def search(request):
 
 
 @api_view(['GET'])
-def movie(request):
-    params = request.GET.dict()
+def movie(request, id):
+    movie = Details.objects.exclude('_id').filter(sourceId=str(id))
+    data = json.loads(movie.to_json())
     filters = {}
-    filters['sourceId'] = params['sourceId']
+    filters['name'] = data[0]['name']
+    filters['source'] = "mtime"
     movie = Details.objects.exclude('_id').filter(**filters)
-    return JsonResponse({'data': json.loads(movie.to_json())}, json_dumps_params={'ensure_ascii': False})
+    if len(json.loads(movie.to_json()))>0:
+        filters.clear()
+        filters['movieId'] = json.loads(movie.to_json())[0]['sourceId']
+        comments = Comments.objects.exclude('_id').filter(**filters)
+        data[0]['comments'] = json.loads(comments.to_json())
+    else:
+        data[0]['comments'] = []
+
+    if '_id' in request.COOKIES:
+        _id = request.COOKIES['_id']
+        user = User.objects.with_id(ObjectId(_id))
+        if user:
+            if 'history' not in user:
+                user.history = {}
+            else:
+                user.history[time.time()] = id
+
+    request.session.set_expiry(3600)
+    request.session.setdefault('sess', [])
+    request.session['sess'] += [id]
+
+    resp = JsonResponse({'data': data}, json_dumps_params={'ensure_ascii': False})
+    return resp
 
 
 @api_view(['GET'])

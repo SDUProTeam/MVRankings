@@ -9,6 +9,15 @@ connect('movie', host=setting['host'], username=setting['username'], password=se
 
 # Create your models here.
 
+class Comments(Document):
+    _id = ObjectIdField()
+    movieId=StringField()
+    user=StringField()
+    userId=StringField()
+    rating=StringField()
+    content=StringField()
+    time=StringField()
+
 class Details(Document):
     source = StringField()
     sourceId = StringField()
@@ -57,3 +66,13 @@ class Fusion(Document):
     rate_num = StringField()
     source = DictField()
     _id = ObjectIdField()
+
+
+class User(Document):
+    _id = ObjectIdField()
+    phone = StringField()
+    name = StringField()
+    pwd = StringField()
+    emb = ListField(FloatField)
+    history = ListField(DictField(LongField))
+

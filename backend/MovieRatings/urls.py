@@ -22,7 +22,10 @@ import api.views as views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    url('api/search', view=views.search),
-    url('api/fusion', view=views.search_fusion),
-    url('api/movie', view=views.movie)
+    path('api/search', view=views.search),
+    path('api/fusion', view=views.search_fusion),
+    path('api/movie/<int:id>/', view=views.movie),
+    path('api/signin', view=views.UserView.signin),
+    path('api/signup', view=views.UserView.signup),
+    path('api/history', view=views.UserView.history),
 ]
