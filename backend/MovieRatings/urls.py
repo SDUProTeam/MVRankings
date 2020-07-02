@@ -19,13 +19,17 @@ from django.conf.urls import include, url
 from django.views.generic.base import TemplateView
 from django.http import HttpResponse
 import api.views as views
+import recsys.views as recviews
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/search', view=views.search),
     path('api/fusion', view=views.search_fusion),
     path('api/movie/<int:id>/', view=views.movie),
-    path('api/signin', view=views.UserView.signin),
-    path('api/signup', view=views.UserView.signup),
-    path('api/history', view=views.UserView.history),
+    path('api/signin', view=views.signin),
+    path('api/signup', view=views.signup),
+    path('api/history', view=views.history),
+    path('api/comment', view=views.add_comment),
+    path('api/question', view=views.question),
+    path('api/recommend', view=recviews.recommend)
 ]

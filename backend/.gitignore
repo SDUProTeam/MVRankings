@@ -1,2 +1,7 @@
 /.idea
 /api/setting.json
+db.sqlite3
+log
+requirements.txt
+*/__pycache__
+*.bak

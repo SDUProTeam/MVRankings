@@ -8,10 +8,29 @@ connect('movie', host=setting['host'], username=setting['username'], password=se
 
 
 # Create your models here.
+class Movie(Document):
+    movieId=IntField()
+    source=DictField()
+    name = StringField()
+    nameFrn = StringField()
+    directors = ListField(StringField())
+    writers = ListField(StringField())
+    stars = ListField(StringField())
+    types = ListField(StringField())
+    country = ListField(StringField())
+    language = ListField(StringField())
+    releaseDate = ListField(StringField())
+    runtime = IntField()
+    imdb = StringField()
+    summary = StringField()
+    timestamp = LongField()
+    year = StringField()
+    _id = ObjectIdField(primary_key=True)
 
 class Comments(Document):
+    sourceId = StringField()
     _id = ObjectIdField()
-    movieId=StringField()
+    movieId=IntField()
     user=StringField()
     userId=StringField()
     rating=StringField()
@@ -31,14 +50,14 @@ class Details(Document):
     country = ListField(StringField())
     language = ListField(StringField())
     releaseDate = ListField(StringField())
-    runtime = StringField()
+    runtime = IntField()
     imdb = StringField()
     summary = StringField()
     rating = StringField()
-    rateNum = StringField()
-    insertStamp = StringField()
+    rateNum = LongField()
+    timestamp = LongField()
     year = StringField()
-    _id = ObjectIdField()
+    _id = ObjectIdField(primary_key=True)
 
 
 class Profile(Document):
@@ -69,10 +88,11 @@ class Fusion(Document):
 
 
 class User(Document):
-    _id = ObjectIdField()
+    _id = ObjectIdField(primary_key=True)
     phone = StringField()
     name = StringField()
     pwd = StringField()
-    emb = ListField(FloatField)
-    history = ListField(DictField(LongField))
+    emb = ListField(FloatField())
+    history = ListField(DictField())
+    question = IntField()
 
