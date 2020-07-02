@@ -4,10 +4,9 @@
 
 ### 前端
 
-- Vue 3.x	建议使用脚手架Vue-cli
-- Vuex	负责静态存储
-- ElementUI	组件库
-- axios	HTTP访问
+- React 16
+- Material-UI	组件库
+- fetch	HTTP访问
 
 ### 后端
 
